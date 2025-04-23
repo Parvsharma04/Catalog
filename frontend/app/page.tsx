@@ -1,108 +1,66 @@
-"use client"
-
-import { useState, useMemo } from "react"
-import Product from "../components/Product"
-import { ProductSort } from "../components/product-sort"
-import { CategorySelector } from "../components/category-selector"
-
-// Sample product data with more variety
-const productData = [
-  {
-    id: "1",
-    name: "Wireless Headphones",
-    price: 129.99,
-    description:
-      "Premium wireless headphones with noise cancellation, 30-hour battery life, and comfortable over-ear design for immersive sound experience.",
-    image: "/placeholder.svg?height=240&width=384",
-    category: "Electronics",
-  },
-  {
-    id: "2",
-    name: "Smart Watch",
-    price: 199.99,
-    description:
-      "Advanced smartwatch with health monitoring, GPS, and a vibrant display. Track your fitness goals and stay connected on the go.",
-    image: "/placeholder.svg?height=240&width=384",
-    category: "Electronics",
-  },
-  {
-    id: "3",
-    name: "Cotton T-Shirt",
-    price: 24.99,
-    description:
-      "Soft and comfortable cotton t-shirt, perfect for everyday wear. Available in multiple colors and sizes.",
-    image: "/placeholder.svg?height=240&width=384",
-    category: "Clothing",
-  },
-  {
-    id: "4",
-    name: "Running Shoes",
-    price: 89.99,
-    description:
-      "Lightweight running shoes with responsive cushioning and breathable mesh upper. Designed for comfort and performance.",
-    image: "/placeholder.svg?height=240&width=384",
-    category: "Footwear",
-  },
-  {
-    id: "5",
-    name: "Bluetooth Speaker",
-    price: 59.99,
-    description:
-      "Portable Bluetooth speaker with 360° sound, waterproof design, and 12-hour battery life. Perfect for outdoor adventures.",
-    image: "/placeholder.svg?height=240&width=384",
-    category: "Electronics",
-  },
-  {
-    id: "6",
-    name: "Leather Wallet",
-    price: 34.99,
-    description: "Genuine leather wallet with multiple card slots, bill compartment, and RFID blocking technology.",
-    image: "/placeholder.svg?height=240&width=384",
-    category: "Accessories",
-  },
-]
+"use client";
+import Product from "@/components/Product";
+import { useMemo, useState } from "react";
+import { CategorySelector } from "../components/category-selector";
+import { ProductSort } from "../components/product-sort";
+import { ProductType, useProductContext } from "../context/ProductContext";
 
 export default function Home() {
-  const [sortOption, setSortOption] = useState("name-asc")
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const { products, loading } = useProductContext();
+  const [sortOption, setSortOption] = useState("name-asc");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  console.log("Products:", products);
 
   // Extract unique categories
-  const categories = useMemo(() => {
-    return Array.from(new Set(productData.map((product) => product.category)))
-  }, [])
+  const categories: string[] = useMemo(() => {
+    return Array.from(
+      new Set(products.map((product: ProductType) => product.category))
+    );
+  }, [products]);
 
   // Handle category selection
   const handleCategoryChange = (category: string | null) => {
-    setSelectedCategory(category)
-  }
+    setSelectedCategory(category);
+  };
 
   // Filter products by selected category
   const filteredProducts = useMemo(() => {
     if (selectedCategory === null) {
-      return productData
+      return products;
     }
-    return productData.filter((product) => product.category === selectedCategory)
-  }, [selectedCategory])
+    return products.filter(
+      (product: ProductType) => product.category === selectedCategory
+    );
+  }, [selectedCategory, products]);
 
   // Sort products based on selected sort option
-  const sortedProducts = useMemo(() => {
+  const sortedProducts: ProductType[] = useMemo(() => {
     return [...filteredProducts].sort((a, b) => {
       switch (sortOption) {
         case "name-asc":
-          return a.name.localeCompare(b.name)
+          return a.name.localeCompare(b.name);
         case "name-desc":
-          return b.name.localeCompare(a.name)
+          return b.name.localeCompare(a.name);
         case "price-asc":
-          return a.price - b.price
+          return a.Price - b.Price;
         case "price-desc":
-          return b.price - a.price
+          return b.Price - a.Price;
         case "category-asc":
-          return a.category.localeCompare(b.category)
+          return a.category.localeCompare(b.category);
         default:
-          return 0
+          return 0;
       }
-    })
-  }, [filteredProducts, sortOption])
+    });
+  }, [filteredProducts, sortOption]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-lg text-muted-foreground">Loading products...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -120,7 +78,9 @@ export default function Home() {
 
       {sortedProducts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-lg text-muted-foreground">No products match your filters</p>
+          <p className="text-lg text-muted-foreground">
+            No products match your filters
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -130,5 +90,5 @@ export default function Home() {
         </div>
       )}
     </main>
-  )
+  );
 }
